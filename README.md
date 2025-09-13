@@ -1,6 +1,6 @@
 # Code Bank for AsteXT
 
-This repository contains programs used in Natural Language Proccessing or related tasks for the AsteXT project.
+This repository contains programs used in Natural Language Proccessing or related tasks for the AsteXT project at Duke University.
 
 Folders:
 - SoftNERTool: this folder contains tools used to identify soft NERs
