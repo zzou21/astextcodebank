@@ -1,5 +1,5 @@
 '''
-This file contails '''
+This file contails the interface to manually tag soft NERs in a story. Please make sure that you have both NLTK and PyQt5 installed. You can do so through using "pip". You can only upload a TXT file to this program. Make sure that you have stored the story you want to tag as a plain TXT file.'''
 
 import sys, nltk, json, re
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QPushButton, QTextEdit, QMessageBox, QProgressBar, QFrame, QScrollArea, QFileDialog, QDialog, QListWidget, QLineEdit, QDialogButtonBox, QInputDialog, QSplitter, QTreeWidget, QTreeWidgetItem, QTabWidget
