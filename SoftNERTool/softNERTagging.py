@@ -1,5 +1,8 @@
-'''
-This file contails the interface to manually tag soft NERs in a story. Please make sure that you have both NLTK and PyQt5 installed. You can do so through using "pip". You can only upload a TXT file to this program. Make sure that you have stored the story you want to tag as a plain TXT file.'''
+"""
+This file contails the interface to manually tag soft NERs in a story. Please make sure that you have both NLTK and PyQt5 installed. You can do so through using "pip". You can only upload a TXT file to this program. Make sure that you have stored the story you want to tag as a plain TXT file.
+
+After you've tagged the soft NERs, the system will export a JSON file. Please make sure to keep your JSON files organized so that we can easily refer to them.
+"""
 
 import sys, nltk, json, re
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QPushButton, QTextEdit, QMessageBox, QProgressBar, QFrame, QScrollArea, QFileDialog, QDialog, QListWidget, QLineEdit, QDialogButtonBox, QInputDialog, QSplitter, QTreeWidget, QTreeWidgetItem, QTabWidget
@@ -81,7 +84,7 @@ class EntityLabelManager(QDialog):
         
         layout.addLayout(button_layout)
         
-        # Dialog buttons
+        # buttons
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
@@ -162,7 +165,7 @@ class ClickableTextEdit(QTextEdit):
                     if self.parent_window:
                         self.parent_window.status_label.setText(f"Removed entity: '{selected_text}' ({existing_entity[2]})")
                 elif not self.overlaps_existing_selection(start, end):
-                    # Ask user to select a label
+                    # ask user to select a label
                     if self.parent_window and self.parent_window.entity_labels:
                         dialog = LabelSelectionDialog(self.parent_window.entity_labels, selected_text, self)
                         if dialog.exec_() == QDialog.Accepted and dialog.selected_label:
@@ -337,11 +340,11 @@ class ClickableTextEdit(QTextEdit):
         
         # Color mapping for different labels
         label_colors = {
-            'PERSON': ("#FFE4B5", "#8B4513"),      # Light orange, dark brown
-            'PLACE': ("#E0FFE0", "#2E8B57"),      # Light green, sea green
-            'ORGANIZATION': ("#E0E6FF", "#4169E1"), # Light blue, royal blue
-            'TIME': ("#FFF0E6", "#FF6347"),       # Light peach, tomato
-            'EVENT': ("#F0E6FF", "#9370DB"),      # Light purple, medium purple
+            'PERSON': ("#FFE4B5", "#8B4513"),
+            'PLACE': ("#E0FFE0", "#2E8B57"),
+            'ORGANIZATION': ("#E0E6FF", "#4169E1"),
+            'TIME': ("#FFF0E6", "#FF6347"),
+            'EVENT': ("#F0E6FF", "#9370DB"),
         }
         
         # Apply highlighting to each selection
@@ -376,7 +379,7 @@ class NamedEntityAnnotationTool(QMainWindow):
         self.currentSentenceIndex = 0
         self.annotations = {}  # Will store {sentence_index: [(start, end, text, label), ...]}
         self.textWidgets = []
-        self.entity_labels = ["Private", "Public", "Government", "Place label", "Commercial", "Natural"]  # Default labels
+        self.entity_labels = ["Private", "Communal/Public", "Extraterrestrial/Figurative", "Natural", "Institutional"]  # Default labels
         
         self.init_ui()
         
@@ -872,7 +875,7 @@ class NamedEntityAnnotationTool(QMainWindow):
         self.currentSentenceIndex = 0
         self.annotations = {}  # Will store {sentence_index: [(start, end, text, label), ...]}
         self.textWidgets = []
-        self.entity_labels = ["Private", "Public", "Government", "Place label", "Commercial", "Natural"]
+        self.entity_labels = ["Private", "Communal/Public", "Extraterrestrial/Figurative", "Natural", "Institutional"]  # Default labels
         
         self.init_ui()
         
@@ -1023,6 +1026,7 @@ class NamedEntityAnnotationTool(QMainWindow):
                     
                     # Clean new lines
                     content = re.sub(r"\n", " ", content)
+
                     # Sentence segmentation
                     segmentedSentences = nltk.sent_tokenize(content)
 
