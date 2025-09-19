@@ -1,6 +1,13 @@
 """
 This file contails the interface to manually tag soft NERs in a story. Please make sure that you have both NLTK and PyQt5 installed. You can do so through using "pip". You can only upload a TXT file to this program. Make sure that you have stored the story you want to tag as a plain TXT file.
 
+If you do not have NLTK or PyQt5 installed already, you can run:
+
+pip install nltk
+pip install PyQt5
+
+in your terminal.
+
 After you've tagged the soft NERs, the system will export a JSON file. Please make sure to keep your JSON files organized so that we can easily refer to them.
 """
 
