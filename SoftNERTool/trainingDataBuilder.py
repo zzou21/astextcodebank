@@ -1,6 +1,6 @@
 '''This file builds testing data for soft ner identification.
 
-Underneath the main function block ("if __name__ == "__main__":"), find:
+Within the main function block ("if __name__ == "__main__":"), find and update:
 
 1. "combiner" (Python object): The object that combines multiple Hard NER and Soft NER files together.
     Parameters:
@@ -39,7 +39,6 @@ class CombinedAnnotation:
     labels: list
     charSpans: list
 
-
 class NerDatasetCombiner:
     """Combines hard NER and soft NER annotations into a unified dataset."""
     
@@ -65,7 +64,7 @@ class NerDatasetCombiner:
             with open(path, 'r', encoding='utf-8') as f:
                 self.hardNerData.append(json.load(f))
         
-        # Load all soft NER files
+        #Load all soft NER files
         for path in softNerPaths:
             with open(path, 'r', encoding='utf-8') as f:
                 self.softNerData.append(json.load(f))
@@ -102,7 +101,7 @@ class NerDatasetCombiner:
                     annEnd = annotation['end']
                     
                     if charStart < annEnd and charEnd > annStart:
-                        # Include file index if multiple hard NER files
+                        #Include file index if multiple hard NER files
                         prefix = f"Hard{idx+1}" if len(self.hardNerData) > 1 else "Hard"
                         return f"{prefix}-{annotation['label']}"
         
@@ -144,7 +143,7 @@ class NerDatasetCombiner:
                 tokens=tokens,
                 labels=labels,
                 charSpans=charSpans
-            )
+            ) # Creating annotation
             
             combinedData.append(combinedAnnotation)
         
@@ -237,38 +236,37 @@ class NerDatasetCombiner:
 
 if __name__ == "__main__":
     
-    # Example with multiple files
+    # TODO: you can add multiple hard NER jsons and soft NER jsons to this Python object as you want. Make sure that the JSON file paths that you are adding to "hardNerPaths" are the JSONs created by identifyHardNER.py and that the JSONs added to "softNerPaths" are JSONs created by the soft NER tagging tool.
     combiner = NerDatasetCombiner(
         hardNerPaths=[
-            "/path/to/hardNER1.json",
-            "/path/to/hardNER2.json",
-            "/path/to/hardNER3.json"
+            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/station4HardNER.json",
+            "anotherFile.json"
         ],
         softNerPaths=[
-            "/path/to/softNER1.json",
-            "/path/to/softNER2.json"
+            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsStation4.json",
+            "anotherFile.json"
         ]
     )
     
     combinedData = combiner.combineAnnotations()
     
+    #Prints out the stats of how many words are under each tag. Always read this to remind ourselves the need to do data resampling in the future.
     print("Example - First Sentence:")
     print(f"Sentence: {combinedData[0].sentence[:100]}...")
     print(f"\nTokens and Labels:")
     for token, label in zip(combinedData[0].tokens[:10], combinedData[0].labels[:10]):
         print(f"  {token:20} -> {label}")
     
-    # File path of where you want to store the combined JSON file
-    combinedTrainingDataJsonPath = "trainingCombinedNER.json"
+    # TODO: create a meaningful name to the training JSON file data that follows the standard data tagging method (where we treat each NER phrase as containing only one word).
+    combinedTrainingDataJsonPath = "trainingOct31MeetingConcat.json"
     
-    # Function call to output combined JSON
-    combiner.saveCombined(combinedTrainingDataJsonPath, format="standard")
+    combiner.saveCombined(combinedTrainingDataJsonPath, format="standard") #see that this function call returns the "standard" data tagging format
     print(f"Saved combined NER training data JSON: {combinedTrainingDataJsonPath}")
     
 
-    # Uncomment this block of you want to use BIO format. We will not be using BIO format, so do not uncomment this block. I left this here in case you want to play around with it:
-    # combiner.saveCombined("trainingCombinedNERBioFormat.json", format="bio")
-    # print("Saved: trainingCombinedNERBioFormat.json")
+    # TODO: This function call takes in the same hard and soft NER JSON files from the object "combiner" but outputs a combined training data tagged using the BIO format.
+    combiner.saveCombined("trainingCombinedNERBioFormat.json", format="bio") #note that this function call returns the BIO data tagging format.
+    print("Saved: trainingCombinedNERBioFormat.json")
     
 
     # Get statistics that will be printed in your consol
