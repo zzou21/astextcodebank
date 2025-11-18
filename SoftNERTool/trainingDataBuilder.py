@@ -19,7 +19,6 @@ Positive: soft NER
 import json
 from dataclasses import dataclass, asdict
 
-
 @dataclass
 class TokenAnnotation:
     """Represents annotation for a single token."""
@@ -69,8 +68,7 @@ class NerDatasetCombiner:
             with open(path, 'r', encoding='utf-8') as f:
                 self.softNerData.append(json.load(f))
         
-        # Use sentences from the first hard NER file as the base
-        # (assuming all files annotate the same sentences)
+        # Use sentences from the first hard NER file as the base (assuming all files annotate the same sentences)
         self.sentences = self.hardNerData[0]['sentences']
         
     def _tokenizeSentence(self, sentence):
@@ -133,18 +131,20 @@ class NerDatasetCombiner:
                 labels.append(label)
                 charSpans.append((startChar, endChar))
             
+            # Create annotation
             combinedAnnotation = CombinedAnnotation(
                 sentenceId=sentId,
                 sentence=sentence,
                 tokens=tokens,
                 labels=labels,
                 charSpans=charSpans
-            ) # Creating annotation
+            )
             
             combinedData.append(combinedAnnotation)
         
         return combinedData
     
+    # Only use this if the function call in the Main function block chooses to use BIO format
     def toBioFormat(self):
         """Convert annotations to BIO tagging format."""
         combined = self.combineAnnotations()
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     
     combinedData = combiner.combineAnnotations()
     
-    #Prints out the stats of how many words are under each tag. Always read this to remind ourselves the need to do data resampling in the future.
+    # Prints out the stats of how many words are under each tag. Always read this to remind ourselves the need to do data resampling in the future.
     print("Example - First Sentence:")
     print(f"Sentence: {combinedData[0].sentence[:100]}...")
     print(f"\nTokens and Labels:")
