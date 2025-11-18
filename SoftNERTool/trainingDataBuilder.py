@@ -101,8 +101,6 @@ class NerDatasetCombiner:
                     annEnd = annotation['end']
                     
                     if charStart < annEnd and charEnd > annStart:
-                        #Include file index if multiple hard NER files
-                        # prefix = f"Hard{idx+1}" if len(self.hardNerData) > 1 else "Hard"
                         return f"Hard-{annotation['label']}"
         
         # Check all soft NER files
@@ -113,8 +111,6 @@ class NerDatasetCombiner:
                     annEnd = annotation['end']
                     
                     if charStart < annEnd and charEnd > annStart:
-                        # Include file index if multiple soft NER files
-                        # prefix = f"Soft{idx+1}" if len(self.softNerData) > 1 else "Soft"
                         return f"Soft-{annotation['label']}"
         
         return "O"
