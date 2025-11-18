@@ -102,8 +102,8 @@ class NerDatasetCombiner:
                     
                     if charStart < annEnd and charEnd > annStart:
                         #Include file index if multiple hard NER files
-                        prefix = f"Hard{idx+1}" if len(self.hardNerData) > 1 else "Hard"
-                        return f"{prefix}-{annotation['label']}"
+                        # prefix = f"Hard{idx+1}" if len(self.hardNerData) > 1 else "Hard"
+                        return f"Hard-{annotation['label']}"
         
         # Check all soft NER files
         for idx, softNer in enumerate(self.softNerData):
@@ -114,8 +114,8 @@ class NerDatasetCombiner:
                     
                     if charStart < annEnd and charEnd > annStart:
                         # Include file index if multiple soft NER files
-                        prefix = f"Soft{idx+1}" if len(self.softNerData) > 1 else "Soft"
-                        return f"{prefix}-{annotation['label']}"
+                        # prefix = f"Soft{idx+1}" if len(self.softNerData) > 1 else "Soft"
+                        return f"Soft-{annotation['label']}"
         
         return "O"
     
@@ -240,11 +240,11 @@ if __name__ == "__main__":
     combiner = NerDatasetCombiner(
         hardNerPaths=[
             "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/station4HardNER.json",
-            "anotherFile.json"
+            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/AHabitPoseHardNER.json"
         ],
         softNerPaths=[
             "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsStation4.json",
-            "anotherFile.json"
+            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsAHabitPose.json"
         ]
     )
     
@@ -258,15 +258,15 @@ if __name__ == "__main__":
         print(f"  {token:20} -> {label}")
     
     # TODO: create a meaningful name to the training JSON file data that follows the standard data tagging method (where we treat each NER phrase as containing only one word).
-    combinedTrainingDataJsonPath = "trainingOct31MeetingConcat.json"
+    combinedTrainingDataJsonPath = "training.json"
     
     combiner.saveCombined(combinedTrainingDataJsonPath, format="standard") #see that this function call returns the "standard" data tagging format
     print(f"Saved combined NER training data JSON: {combinedTrainingDataJsonPath}")
     
 
     # TODO: This function call takes in the same hard and soft NER JSON files from the object "combiner" but outputs a combined training data tagged using the BIO format.
-    combiner.saveCombined("trainingCombinedNERBioFormat.json", format="bio") #note that this function call returns the BIO data tagging format.
-    print("Saved: trainingCombinedNERBioFormat.json")
+    # combiner.saveCombined("trainingCombinedNERBioFormat.json", format="bio") #note that this function call returns the BIO data tagging format.
+    # print("Saved: trainingCombinedNERBioFormat.json")
     
 
     # Get statistics that will be printed in your consol

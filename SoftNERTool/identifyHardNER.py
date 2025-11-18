@@ -66,10 +66,10 @@ class labelHardNER:
 if __name__ == "__main__":
 
     # TODO: List of JSON paths that contains the tagged soft NER created by the soft NER tagging tool that I provided. Update this to a string representing the JSON file in your local computer.
-    jsonLabeledTokenizedPath = "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsStation4.json"
+    jsonLabeledTokenizedPath = "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsAHabitPose.json"
 
     # TODO: JSON file path to store hard NER storage. Name this new JSON file in a way that is meaningful to you. Remember, courtesy of JSON's library, you do not need to physcially create a JSON file in your IDE. If your file path refers to a JSON file that doesn't exist yet, the Python program will automatically create a JSON file for you that is named according to the file name you provide.
-    hardNERJsonStorage = "station4HardNER.json"
+    hardNERJsonStorage = "AHabitPoseHardNER.json"
     
     hardNERLabeler = labelHardNER(jsonLabeledTokenizedPath)
     hardNERLabeler.exportHardNERLabel(hardNERJsonStorage)
