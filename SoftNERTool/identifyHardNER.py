@@ -33,10 +33,14 @@ class labelHardNER:
 
         storageDict = {} # dictionary that stores the hard NER labels
         NERLabeler = spacy.load('en_core_web_sm')
-        
-        NERLabelCounter = 0
 
-        for sentence in sentTokenizedStory:
+        # IMPORTANT: use the **actual sentence index** as the key in
+        # storageDict so that it aligns with the "sentences" list.
+        # This makes the hard NER annotations compatible with
+        # trainingDataBuilder.NerDatasetCombiner, which expects
+        # annotations[str(sentenceId)] to correspond to sentences[sentenceId].
+
+        for sentenceIndex, sentence in enumerate(sentTokenizedStory):
             sent = NERLabeler(sentence)
             entityInfo = [] # Each sentence might have multiple named entities
             for ent in sent.ents:
@@ -49,9 +53,8 @@ class labelHardNER:
                         "sentence": sentence
                     })
             if entityInfo != []:
-                storageDict[str(NERLabelCounter)] = entityInfo
-                NERLabelCounter += 1
-        
+                storageDict[str(sentenceIndex)] = entityInfo
+
         return storageDict, sentTokenizedStory
     
     def exportHardNERLabel(self, jsonPath):
@@ -66,10 +69,10 @@ class labelHardNER:
 if __name__ == "__main__":
 
     # TODO: List of JSON paths that contains the tagged soft NER created by the soft NER tagging tool that I provided. Update this to a string representing the JSON file in your local computer.
-    jsonLabeledTokenizedPath = "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsAHabitPose.json"
+    jsonLabeledTokenizedPath = "/Users/damao/Documents/AsteXT/workdir/ifyoucutmemymotherbleeds_su_2023/annotations.json"
 
     # TODO: JSON file path to store hard NER storage. Name this new JSON file in a way that is meaningful to you. Remember, courtesy of JSON's library, you do not need to physcially create a JSON file in your IDE. If your file path refers to a JSON file that doesn't exist yet, the Python program will automatically create a JSON file for you that is named according to the file name you provide.
-    hardNERJsonStorage = "AHabitPoseHardNER.json"
+    hardNERJsonStorage = "ifyoucutmemymotherbleeds_su_2023HardNER.json"
     
     hardNERLabeler = labelHardNER(jsonLabeledTokenizedPath)
     hardNERLabeler.exportHardNERLabel(hardNERJsonStorage)

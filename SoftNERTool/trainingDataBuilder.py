@@ -231,49 +231,117 @@ class NerDatasetCombiner:
 
 
 if __name__ == "__main__":
-    
-    # TODO: you can add multiple hard NER jsons and soft NER jsons to this Python object as you want. Make sure that the JSON file paths that you are adding to "hardNerPaths" are the JSONs created by identifyHardNER.py and that the JSONs added to "softNerPaths" are JSONs created by the soft NER tagging tool.
-    combiner = NerDatasetCombiner(
-        hardNerPaths=[
-            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/station4HardNER.json",
-            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/AHabitPoseHardNER.json"
-        ],
-        softNerPaths=[
-            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsStation4.json",
-            "/Users/Jerry/Desktop/AsteXT/AsteXTCode/AsteXTCode2025-6/Data/annotationsAHabitPose.json"
-        ]
-    )
-    
-    combinedData = combiner.combineAnnotations()
-    
-    # Prints out the stats of how many words are under each tag. Always read this to remind ourselves the need to do data resampling in the future.
-    print("Example - First Sentence:")
-    print(f"Sentence: {combinedData[0].sentence[:100]}...")
-    print(f"\nTokens and Labels:")
-    for token, label in zip(combinedData[0].tokens[:10], combinedData[0].labels[:10]):
-        print(f"  {token:20} -> {label}")
-    
-    # TODO: create a meaningful name to the training JSON file data that follows the standard data tagging method (where we treat each NER phrase as containing only one word).
-    combinedTrainingDataJsonPath = "training.json"
-    
-    combiner.saveCombined(combinedTrainingDataJsonPath, format="standard") #see that this function call returns the "standard" data tagging format
-    print(f"Saved combined NER training data JSON: {combinedTrainingDataJsonPath}")
-    
+    """Build training data per story, then merge all stories into one JSON.
 
-    # TODO: This function call takes in the same hard and soft NER JSON files from the object "combiner" but outputs a combined training data tagged using the BIO format.
-    # combiner.saveCombined("trainingCombinedNERBioFormat.json", format="bio") #note that this function call returns the BIO data tagging format.
-    # print("Saved: trainingCombinedNERBioFormat.json")
-    
+    We keep the original flat list input style:
+      - hardNerPaths = [story1_hard.json, story2_hard.json, ...]
+      - softNerPaths = [story1_soft.json, story2_soft.json, ...]
 
-    # Get statistics that will be printed in your consol
-    stats = combiner.getStatistics()
-    print("\nDataset Statistics:")
-    print(f"  Hard NER files: {stats['numHardNerFiles']}")
-    print(f"  Soft NER files: {stats['numSoftNerFiles']}")
-    print(f"  Total sentences: {stats['totalSentences']}")
-    print(f"  Total tokens: {stats['totalTokens']}")
-    print(f"  Avg tokens/sentence: {stats['avgTokensPerSentence']:.2f}")
-    print(f"\nLabel Distribution:")
-    for label, count in sorted(stats['labelDistribution'].items(), key=lambda x: x[1], reverse=True):
-        percentage = (count / stats['totalTokens']) * 100
+    We assume that hardNerPaths[i] and softNerPaths[i] belong to the
+    same story. Each pair is combined independently to avoid
+    cross-story label contamination, then all sentences are concatenated.
+    """
+
+    # IMPORTANT: update these two lists. Make sure that
+    #   - hardNerPaths[i] corresponds to softNerPaths[i]
+    #   - Each pair (hard, soft) comes from the same book.
+    hardNerPaths = [
+        "/Users/damao/Documents/AsteXT/workdir/ifyoucutmemymotherbleeds_su_2023/ifyoucutmemymotherbleeds_su_2023HardNER.json",
+        "/Users/damao/Documents/AsteXT/workdir/tension_khalifeh_1984/tension_khalifeh_1984HardNER.json",
+        "/Users/damao/Documents/AsteXT/workdir/lipstick_kuo_2000/lipstick_kuo_2000HardNER.json",
+        "/Users/damao/Documents/AsteXT/workdir/mallikareflectsontheeventsofdiscountmonday_zaidi_2019/mallikareflectsontheeventsofdiscountmonday_zaidi_2019HardNER.json",
+    ]
+
+    softNerPaths = [
+        "/Users/damao/Documents/AsteXT/workdir/ifyoucutmemymotherbleeds_su_2023/annotations.json",
+        "/Users/damao/Documents/AsteXT/workdir/tension_khalifeh_1984/annotations.json",
+        "/Users/damao/Documents/AsteXT/workdir/lipstick_kuo_2000/annotations.json",
+        "/Users/damao/Documents/AsteXT/workdir/mallikareflectsontheeventsofdiscountmonday_zaidi_2019/annotations.json",
+    ]
+
+    if len(hardNerPaths) != len(softNerPaths):
+        raise ValueError("The lengths of hardNerPaths and softNerPaths must be the same, and they should correspond one-to-one to the same book.")
+
+    all_sentences = []
+    all_hard_labels = set()
+    all_soft_labels = set()
+    total_hard_files = 0
+    total_soft_files = 0
+
+    print("Building per-story training data and merging...")
+
+    for idx, (hard_path, soft_path) in enumerate(zip(hardNerPaths, softNerPaths), start=1):
+        print(f"\n[{idx}/{len(hardNerPaths)}] Processing pair:\n  hard: {hard_path}\n  soft: {soft_path}")
+
+        combiner = NerDatasetCombiner(
+            hardNerPaths=[hard_path],
+            softNerPaths=[soft_path],
+        )
+
+        story_dict = combiner.toDict()
+
+        # If you need independent training JSON for each book (standard format), uncomment below:
+        # import os
+        # story_name = os.path.splitext(os.path.basename(hard_path))[0]
+        # per_story_path = f"training_{story_name}.json"
+        # with open(per_story_path, "w", encoding="utf-8") as f:
+        #     json.dump(story_dict, f, indent=2, ensure_ascii=False)
+        # print(f"  Saved per-story training data: {per_story_path}")
+
+        # If you also want a BIO-format training file for this book,
+        # you can call saveCombined with format="bio":
+        # bio_story_path = f"training_{story_name}_bio.json"
+        # combiner.saveCombined(bio_story_path, format="bio")
+        # print(f"  Saved per-story BIO-format training data: {bio_story_path}")
+
+        # To inspect per-book statistics:
+        # stats = combiner.getStatistics()
+        # print("  Per-book statistics:")
+        # print(f"    Total sentences: {stats['totalSentences']}")
+        # print(f"    Total tokens: {stats['totalTokens']}")
+
+        # Accumulate into the overall merged output
+        all_sentences.extend(story_dict.get("sentences", []))
+        all_hard_labels.update(story_dict.get("hardLabels", []))
+        all_soft_labels.update(story_dict.get("softLabels", []))
+        total_hard_files += story_dict.get("numHardNerFiles", 0)
+        total_soft_files += story_dict.get("numSoftNerFiles", 0)
+
+    merged_dict = {
+        "sentences": all_sentences,
+        "labelTypes": ["O", "Hard NER", "Soft NER"],
+        "hardLabels": sorted(all_hard_labels),
+        "softLabels": sorted(all_soft_labels),
+        "numHardNerFiles": total_hard_files,
+        "numSoftNerFiles": total_soft_files,
+    }
+
+    # Name of the final merged training JSON
+    combinedTrainingDataJsonPath = "training_2026Jan_all.json"
+
+    with open(combinedTrainingDataJsonPath, "w", encoding="utf-8") as f:
+        json.dump(merged_dict, f, indent=2, ensure_ascii=False)
+
+    print(f"\nSaved merged NER training data JSON: {combinedTrainingDataJsonPath}")
+
+    # Simple overall statistics for the merged dataset
+    total_sentences = len(all_sentences)
+    total_tokens = sum(len(s.get("tokens", [])) for s in all_sentences)
+    label_counts = {}
+    for s in all_sentences:
+        for lbl in s.get("labels", []):
+            label_counts[lbl] = label_counts.get(lbl, 0) + 1
+
+    avg_tokens_per_sentence = total_tokens / total_sentences if total_sentences else 0
+
+    print("\nMerged Dataset Statistics:")
+    print(f"  Stories: {len(hardNerPaths)}")
+    print(f"  Hard NER files: {total_hard_files}")
+    print(f"  Soft NER files: {total_soft_files}")
+    print(f"  Total sentences: {total_sentences}")
+    print(f"  Total tokens: {total_tokens}")
+    print(f"  Avg tokens/sentence: {avg_tokens_per_sentence:.2f}")
+    print(f"\nLabel Distribution (token-level):")
+    for label, count in sorted(label_counts.items(), key=lambda x: x[1], reverse=True):
+        percentage = (count / total_tokens) * 100 if total_tokens else 0
         print(f"  {label:30} {count:6} ({percentage:5.2f}%)")
